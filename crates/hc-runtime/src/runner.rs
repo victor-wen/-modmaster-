@@ -1,10 +1,10 @@
-use hc_core::model::*;
-use hc_core::source::{Source, PollRequest};
 use hc_core::event::Event;
 use hc_core::hook::Hook;
+use hc_core::model::*;
+use hc_core::source::{PollRequest, Source};
 use std::sync::Arc;
-use tokio::sync::broadcast;
 use std::time::Duration;
+use tokio::sync::broadcast;
 
 pub struct DeviceRunner {
     task: Option<tokio::task::JoinHandle<()>>,
@@ -12,7 +12,13 @@ pub struct DeviceRunner {
 }
 
 impl DeviceRunner {
-    pub fn spawn(device: Device, tags: Vec<Tag>, mut source: Box<dyn Source>, event_tx: broadcast::Sender<Event>, hooks: Vec<Arc<dyn Hook>>) -> Self {
+    pub fn spawn(
+        device: Device,
+        tags: Vec<Tag>,
+        mut source: Box<dyn Source>,
+        event_tx: broadcast::Sender<Event>,
+        hooks: Vec<Arc<dyn Hook>>,
+    ) -> Self {
         let (tx, mut rx) = tokio::sync::oneshot::channel::<()>();
         let interval = Duration::from_millis(device.poll_interval_ms);
         let handle = tokio::spawn(async move {
@@ -22,32 +28,47 @@ impl DeviceRunner {
                     _ = tokio::time::sleep(interval) => {}
                 }
                 let active: Vec<Tag> = tags.iter().filter(|t| t.enabled).cloned().collect();
-                if active.is_empty() { continue; }
+                if active.is_empty() {
+                    continue;
+                }
                 match source.poll(&PollRequest { tags: active }).await {
                     Ok(outcome) => {
                         let mut s = outcome.samples;
-                        for h in &hooks { h.before_publish(&device.id, &mut s); }
+                        for h in &hooks {
+                            h.before_publish(&device.id, &mut s);
+                        }
                         let _ = event_tx.send(Event::PollSucceeded(device.id.clone(), s));
-                        let _ = event_tx.send(Event::ConnectionStateChanged(device.id.clone(), true));
+                        let _ =
+                            event_tx.send(Event::ConnectionStateChanged(device.id.clone(), true));
                     }
                     Err(e) => {
                         let _ = event_tx.send(Event::PollFailed(device.id.clone(), e.to_string()));
-                        let _ = event_tx.send(Event::ConnectionStateChanged(device.id.clone(), false));
+                        let _ =
+                            event_tx.send(Event::ConnectionStateChanged(device.id.clone(), false));
                         tokio::time::sleep(Duration::from_secs(1)).await;
                     }
                 }
-                for h in &hooks { h.after_poll(&device.id, &Ok(())); }
+                for h in &hooks {
+                    h.after_poll(&device.id, &Ok(()));
+                }
             }
         });
-        DeviceRunner { task: Some(handle), shutdown: Some(tx) }
+        DeviceRunner {
+            task: Some(handle),
+            shutdown: Some(tx),
+        }
     }
 
     pub fn stop(&mut self) {
-        if let Some(tx) = self.shutdown.take() { let _ = tx.send(()); }
+        if let Some(tx) = self.shutdown.take() {
+            let _ = tx.send(());
+        }
         self.task.take();
     }
 }
 
 impl Drop for DeviceRunner {
-    fn drop(&mut self) { self.stop(); }
+    fn drop(&mut self) {
+        self.stop();
+    }
 }

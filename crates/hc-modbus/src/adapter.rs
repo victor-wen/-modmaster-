@@ -1,6 +1,6 @@
-use async_trait::async_trait;
 use crate::decoder::decode_registers;
 use crate::transport::ModbusTransport;
+use async_trait::async_trait;
 use hc_core::error::SourceError;
 use hc_core::model::*;
 use hc_core::source::{PollOutcome, PollRequest, Source, SourceHealth, WriteRequest};
@@ -44,13 +44,17 @@ impl Source for ModbusSource {
                     .transport
                     .read_holding(addr, qty)
                     .await
-                    .map(|r| decode_registers(&r, tag.data_type, tag.byte_order, tag.scale, tag.offset))?
+                    .map(|r| {
+                        decode_registers(&r, tag.data_type, tag.byte_order, tag.scale, tag.offset)
+                    })?
                     .ok_or(SourceError::Protocol("decode failed".into())),
                 "read_input" => self
                     .transport
                     .read_input(addr, qty)
                     .await
-                    .map(|r| decode_registers(&r, tag.data_type, tag.byte_order, tag.scale, tag.offset))?
+                    .map(|r| {
+                        decode_registers(&r, tag.data_type, tag.byte_order, tag.scale, tag.offset)
+                    })?
                     .ok_or(SourceError::Protocol("decode failed".into())),
                 "read_coil" => self
                     .transport

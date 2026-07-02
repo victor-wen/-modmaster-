@@ -1,6 +1,6 @@
-use async_trait::async_trait;
-use crate::model::*;
 use crate::error::SourceError;
+use crate::model::*;
+use async_trait::async_trait;
 
 #[derive(Debug, Clone)]
 pub struct PollRequest {
@@ -30,7 +30,8 @@ pub enum SourceHealth {
 #[async_trait]
 pub trait Source: Send {
     async fn open(spec: &Device) -> Result<Self, SourceError>
-    where Self: Sized;
+    where
+        Self: Sized;
     async fn poll(&mut self, req: &PollRequest) -> Result<PollOutcome, SourceError>;
     async fn write(&mut self, req: &WriteRequest) -> WriteOutcome;
     async fn health(&mut self) -> SourceHealth;
