@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/hc-core",
+    "crates/hc-modbus",
+    "crates/hc-storage",
+    "crates/hc-runtime",
+    "crates/hc-ipc",
+]
