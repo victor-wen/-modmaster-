@@ -1,6 +1,6 @@
 import type { WidgetRuntimeProps } from "../types";
 
-export function Gauge({ bindings, values }: WidgetRuntimeProps) {
+export function Gauge({ bindings, values, config }: WidgetRuntimeProps) {
   const tagId = bindings[0]?.tag_id;
   const v = tagId ? values[tagId] : undefined;
   const raw = typeof v?.value === "number" ? v.value : 0;
@@ -11,6 +11,7 @@ export function Gauge({ bindings, values }: WidgetRuntimeProps) {
 
   return (
     <div className="flex h-full flex-col items-center justify-center">
+      <h3 className="text-xs font-bold">{String(config.title || "")}</h3>
       <svg viewBox="0 0 100 100" className="w-24 h-24" aria-label="Gauge">
         <title>Gauge</title>
         <circle cx="50" cy="50" r={r} fill="none" stroke="#334155" strokeWidth="8" />

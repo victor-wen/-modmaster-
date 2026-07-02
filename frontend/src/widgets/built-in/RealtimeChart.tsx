@@ -1,12 +1,16 @@
 import { useEffect, useRef } from "react";
 import { createChart, ColorType } from "lightweight-charts";
+import type { UTCTimestamp } from "lightweight-charts";
 import type { WidgetRuntimeProps } from "../types";
 
 const COLORS = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899"];
 
 export function RealtimeChart({ bindings, values }: WidgetRuntimeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<ReturnType<typeof createChart> | null>(null);
   const seriesRef = useRef<Map<string, ReturnType<ReturnType<typeof createChart>["addLineSeries"]>>>(new Map());
+
+  const stableKey = bindings.map((b) => b.tag_id).join(",");
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -18,6 +22,7 @@ export function RealtimeChart({ bindings, values }: WidgetRuntimeProps) {
       crosshair: { mode: 0 },
     });
     chart.timeScale().fitContent();
+    chartRef.current = chart;
 
     const seriesMap = seriesRef.current;
     bindings.forEach((b, i) => {
@@ -31,16 +36,30 @@ export function RealtimeChart({ bindings, values }: WidgetRuntimeProps) {
 
     return () => {
       seriesMap.clear();
+      chartRef.current = null;
       chart.remove();
     };
-  }, [bindings]);
+  }, [stableKey]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        chartRef.current?.applyOptions({ width, height });
+      }
+    });
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     const seriesMap = seriesRef.current;
     for (const [tagId, series] of seriesMap) {
       const v = values[tagId];
       if (v && typeof v.value === "number") {
-        series.update({ time: v.ts.slice(5, 19).replace("T", " ") as any, value: v.value });
+        series.update({ time: Math.floor(new Date(v.ts).getTime() / 1000) as UTCTimestamp, value: v.value });
       }
     }
   }, [values]);
