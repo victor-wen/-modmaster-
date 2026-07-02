@@ -28,4 +28,4 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - run: cd frontend && npm ci && npm run build
-      - run: cargo tauri build
+      - run: ./frontend/node_modules/.bin/tauri build
