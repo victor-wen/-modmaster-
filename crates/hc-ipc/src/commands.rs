@@ -7,8 +7,7 @@ pub async fn new_project(
     _state: tauri::State<'_, SharedState>,
     name: String,
 ) -> Result<Project, String> {
-    let mut project = Project::default();
-    project.name = name.clone();
+    let mut project = Project { name: name.clone(), ..Default::default() };
     let sanitized: String = name
         .chars()
         .map(|c| {

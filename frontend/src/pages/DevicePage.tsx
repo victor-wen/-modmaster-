@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "../ipc/client";
-import type { Device, Tag } from "../ipc/bindings";
+import type { Device, Tag, TcpTransport } from "../ipc/bindings";
 
 const client = createClient();
 const emptyDevice = (): Omit<Device, "id"> & { id: string } => ({
@@ -32,7 +32,9 @@ export default function DevicePage() {
     } catch { /* ignore */ }
   }, []);
 
-  useEffect(() => { loadDevices(); }, [loadDevices]);
+  useEffect(() => {
+    (async () => { try { setDevices(await client.listDevices()); } catch { /* ignore */ } })();
+  }, []);
 
   const handleDeviceSelect = (id: string) => {
     setSelectedDeviceId(id);
@@ -96,14 +98,14 @@ export default function DevicePage() {
             <input placeholder="Name" className="rounded border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-white"
               value={deviceForm.name} onChange={(e) => setDeviceForm({ ...deviceForm, name: e.target.value })} />
             <input placeholder="Host" className="rounded border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-white"
-              value={(deviceForm.transport as { type: "Tcp"; host: string; port: number }).host}
-              onChange={(e) => setDeviceForm({ ...deviceForm, transport: { ...deviceForm.transport as any, host: e.target.value } })} />
+              value={(deviceForm.transport as TcpTransport).host}
+              onChange={(e) => setDeviceForm({ ...deviceForm, transport: { ...(deviceForm.transport as TcpTransport), host: e.target.value } })} />
             <div className="flex gap-2">
               <input type="number" placeholder="Port" className="flex-1 rounded border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-white"
-                value={(deviceForm.transport as { type: "Tcp"; host: string; port: number }).port}
-                onChange={(e) => setDeviceForm({ ...deviceForm, transport: { ...deviceForm.transport as any, port: parseInt(e.target.value) || 502 } })} />
+                value={(deviceForm.transport as TcpTransport).port}
+                onChange={(e) => setDeviceForm({ ...deviceForm, transport: { ...(deviceForm.transport as TcpTransport), port: parseInt(e.target.value) || 502 } })} />
               <input type="number" placeholder="Slave ID" className="w-24 rounded border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-white"
-                value={(deviceForm.protocol_params as any)?.slave_id ?? 1}
+                value={(deviceForm.protocol_params as { slave_id?: number })?.slave_id ?? 1}
                 onChange={(e) => setDeviceForm({ ...deviceForm, protocol_params: { ...deviceForm.protocol_params, slave_id: parseInt(e.target.value) || 1 } })} />
             </div>
             <input type="number" placeholder="Poll interval (ms)" className="rounded border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-white"
@@ -153,10 +155,10 @@ export default function DevicePage() {
                 value={tagForm.name} onChange={(e) => setTagForm({ ...tagForm, name: e.target.value })} />
               <div className="flex gap-2">
                 <input type="number" placeholder="Address" className="flex-1 rounded border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-white"
-                  value={(tagForm.protocol_params as any)?.address ?? 0}
+                  value={(tagForm.protocol_params as { address?: number })?.address ?? 0}
                   onChange={(e) => setTagForm({ ...tagForm, protocol_params: { ...tagForm.protocol_params, address: parseInt(e.target.value) || 0 } })} />
                 <input type="number" placeholder="Quantity" className="w-24 rounded border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-white"
-                  value={(tagForm.protocol_params as any)?.quantity ?? 1}
+                  value={(tagForm.protocol_params as { quantity?: number })?.quantity ?? 1}
                   onChange={(e) => setTagForm({ ...tagForm, protocol_params: { ...tagForm.protocol_params, quantity: parseInt(e.target.value) || 1 } })} />
               </div>
               <div className="flex gap-2">
@@ -206,7 +208,7 @@ export default function DevicePage() {
                 <div key={t.id} className="flex items-center justify-between rounded px-3 py-2 text-sm text-slate-300 hover:bg-slate-700/50">
                   <div>
                     <span>{t.name}</span>
-                    <span className="ml-2 text-xs text-slate-500">{t.data_type} @{String((t.protocol_params as any)?.address ?? "?")}</span>
+                    <span className="ml-2 text-xs text-slate-500">{t.data_type} @{String((t.protocol_params as { address?: number })?.address ?? "?")}</span>
                   </div>
                   <div className="flex gap-2">
                     <button type="button" onClick={() => handleEditTag(t)}

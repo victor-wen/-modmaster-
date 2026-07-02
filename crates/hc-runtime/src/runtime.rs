@@ -19,6 +19,12 @@ pub struct Runtime {
     running: Arc<Mutex<bool>>,
 }
 
+impl Default for Runtime {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Runtime {
     pub fn new() -> Self {
         Runtime {

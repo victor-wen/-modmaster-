@@ -12,6 +12,12 @@ pub struct UpdateThrottle {
     dropped: u64,
 }
 
+impl Default for UpdateThrottle {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl UpdateThrottle {
     pub fn new() -> Self {
         UpdateThrottle {

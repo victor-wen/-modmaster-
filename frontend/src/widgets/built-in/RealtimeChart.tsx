@@ -10,8 +10,6 @@ export function RealtimeChart({ bindings, values }: WidgetRuntimeProps) {
   const chartRef = useRef<ReturnType<typeof createChart> | null>(null);
   const seriesRef = useRef<Map<string, ReturnType<ReturnType<typeof createChart>["addLineSeries"]>>>(new Map());
 
-  const stableKey = bindings.map((b) => b.tag_id).join(",");
-
   useEffect(() => {
     if (!containerRef.current) return;
     const chart = createChart(containerRef.current, {
@@ -39,7 +37,7 @@ export function RealtimeChart({ bindings, values }: WidgetRuntimeProps) {
       chartRef.current = null;
       chart.remove();
     };
-  }, [stableKey]);
+  }, [bindings]);
 
   useEffect(() => {
     const container = containerRef.current;

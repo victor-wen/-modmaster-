@@ -9,6 +9,12 @@ pub struct AppState {
     pub tauri_app: Option<tauri::AppHandle>,
 }
 
+impl Default for AppState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AppState {
     pub fn new() -> Self {
         AppState {
