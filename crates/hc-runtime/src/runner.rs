@@ -2,6 +2,7 @@ use hc_core::model::*;
 use hc_core::source::{Source, PollRequest};
 use hc_core::event::Event;
 use hc_core::hook::Hook;
+use std::sync::Arc;
 use tokio::sync::broadcast;
 use std::time::Duration;
 
@@ -11,7 +12,7 @@ pub struct DeviceRunner {
 }
 
 impl DeviceRunner {
-    pub fn spawn(device: Device, tags: Vec<Tag>, mut source: Box<dyn Source>, event_tx: broadcast::Sender<Event>, hooks: Vec<Box<dyn Hook>>) -> Self {
+    pub fn spawn(device: Device, tags: Vec<Tag>, mut source: Box<dyn Source>, event_tx: broadcast::Sender<Event>, hooks: Vec<Arc<dyn Hook>>) -> Self {
         let (tx, mut rx) = tokio::sync::oneshot::channel::<()>();
         let interval = Duration::from_millis(device.poll_interval_ms);
         let handle = tokio::spawn(async move {
