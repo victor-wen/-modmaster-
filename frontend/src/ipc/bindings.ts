@@ -21,3 +21,4 @@ export interface DeviceState { device_id: string; online: boolean; error_count: 
 export interface RuntimeStatus { running: boolean; devices: DeviceState[]; }
 export interface Sample { tag_id: string; ts: string; value: number | boolean; quality: string; }
 export interface LogEntry { ts: string; level: string; message: string; }
+export interface Dashboard { name: string; widgets: string; }

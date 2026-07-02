@@ -1,12 +1,19 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import type { UnlistenFn } from "@tauri-apps/api/event";
-import type { Project, Device, TagUpdate, DeviceState, RuntimeStatus, Sample, LogEntry } from "./bindings";
+import type { Project, Device, Tag, TagUpdate, DeviceState, RuntimeStatus, Sample, LogEntry, Dashboard } from "./bindings";
 export interface IpcClient {
   newProject(name: string): Promise<Project>;
   openProject(path: string): Promise<Project>;
   saveProject(p: Project): Promise<void>;
   listDevices(): Promise<Device[]>;
+  upsertDevice(d: Device): Promise<void>;
+  removeDevice(id: string): Promise<void>;
+  listTags(deviceId?: string): Promise<Tag[]>;
+  upsertTag(t: Tag): Promise<void>;
+  removeTag(id: string): Promise<void>;
+  listDashboards(): Promise<Dashboard[]>;
+  saveDashboard(name: string, layout: string): Promise<void>;
   startRuntime(): Promise<void>;
   stopRuntime(): Promise<void>;
   runtimeStatus(): Promise<RuntimeStatus>;
@@ -22,6 +29,13 @@ export function createClient(): IpcClient {
     openProject: (p) => invoke("open_project", { path: p }),
     saveProject: (p) => invoke("save_project", { project: p }),
     listDevices: () => invoke("list_devices"),
+    upsertDevice: (d) => invoke("upsert_device", { device: d }),
+    removeDevice: (id) => invoke("remove_device", { id }),
+    listTags: (deviceId) => invoke("list_tags", { deviceId: deviceId ?? null }),
+    upsertTag: (t) => invoke("upsert_tag", { tag: t }),
+    removeTag: (id) => invoke("remove_tag", { id }),
+    listDashboards: () => invoke("list_dashboards"),
+    saveDashboard: (name, layout) => invoke("save_dashboard", { name, layout }),
     startRuntime: () => invoke("start_runtime"),
     stopRuntime: () => invoke("stop_runtime"),
     runtimeStatus: () => invoke("runtime_status"),
