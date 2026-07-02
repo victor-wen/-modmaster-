@@ -7,6 +7,7 @@ pub type DeviceId = String;
 pub type TagId = String;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum Value {
     U16(u16),
     I16(i16),
@@ -76,6 +77,7 @@ impl From<&Sample> for TagUpdate {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum DataType {
     U16,
     I16,
@@ -86,6 +88,7 @@ pub enum DataType {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum ByteOrder {
     Abcd,
     Badc,
@@ -124,7 +127,7 @@ impl Default for Device {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[serde(tag = "type", rename_all = "lowercase")]
 pub enum TransportSpec {
     Tcp {
         host: String,
