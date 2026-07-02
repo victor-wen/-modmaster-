@@ -3,7 +3,7 @@ use hc_core::model::*;
 #[test]
 fn test_value_display() {
     assert_eq!(Value::U16(42).to_string(), "42");
-    assert_eq!(Value::F32(3.14).to_string(), "3.14");
+    assert_eq!(Value::F32(3.15).to_string(), "3.15");
     assert_eq!(Value::Bool(true).to_string(), "true");
 }
 

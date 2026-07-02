@@ -61,9 +61,8 @@ mod tests {
                 message: format!("m{i}"),
             }));
         }
-        match rx.try_recv() {
-            Err(broadcast::error::TryRecvError::Lagged(n)) => assert!(n > 0),
-            _ => {}
+        if let Err(broadcast::error::TryRecvError::Lagged(n)) = rx.try_recv() {
+            assert!(n > 0);
         }
     }
 }
