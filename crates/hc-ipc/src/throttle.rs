@@ -30,6 +30,9 @@ impl UpdateThrottle {
         if (self.last_emit.elapsed().as_millis() as u64) < BATCH_MS || self.pending.is_empty() {
             return None;
         }
+        if self.last_values.len() > 8192 {
+            self.last_values.clear();
+        }
         let n = self.pending.len();
         if n > CHANNEL_MAX {
             self.dropped += (n - CHANNEL_MAX) as u64;
@@ -62,8 +65,10 @@ impl UpdateThrottle {
         }
     }
 
-    pub fn dropped_count(&self) -> u64 {
-        self.dropped
+    pub fn dropped_count(&mut self) -> u64 {
+        let count = self.dropped;
+        self.dropped = 0;
+        count
     }
 }
 

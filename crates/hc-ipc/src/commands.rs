@@ -6,7 +6,10 @@ use hc_storage::project;
 pub async fn new_project(_state: tauri::State<'_, SharedState>, name: String) -> Result<Project, String> {
     let mut project = Project::default();
     project.name = name.clone();
-    let base = std::env::temp_dir().join("hc_projects").join(project::project_dir_name(&name));
+    let sanitized: String = name.chars()
+        .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '_' })
+        .collect();
+    let base = std::env::temp_dir().join("hc_projects").join(project::project_dir_name(&sanitized));
     project::create_project(&base, &project).map_err(|e| e.to_string())?;
     project.path = Some(base);
     Ok(project)

@@ -35,7 +35,9 @@ pub async fn spawn_event_handler(state: SharedState) {
                     let mut t = t2.lock().await;
                     for s in &samples { t.push(TagUpdate::from(s)); }
                     let dropped = t.dropped_count();
+                    drop(t);
                     if dropped > 0 {
+                        log::warn!("IPC throttle dropped {dropped} updates");
                         if let Some(app) = s2.lock().await.tauri_app.as_ref() {
                             let _ = app.emit("log", &LogEntry {
                                 ts: chrono::Utc::now(), level: "warn".into(),
@@ -70,7 +72,10 @@ pub async fn spawn_event_handler(state: SharedState) {
                         let _ = app.emit("device-state", &ds);
                     }
                 }
-                Err(_) => break,
+                Err(tokio::sync::broadcast::error::RecvError::Lagged(n)) => {
+                    log::warn!("Event bus lagged by {n} messages");
+                }
+                Err(tokio::sync::broadcast::error::RecvError::Closed) => break,
             }
         }
     });
