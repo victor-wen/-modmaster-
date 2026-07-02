@@ -29,3 +29,7 @@ jobs:
         with: { node-version: 20 }
       - run: cd frontend && npm ci && npm run build
       - run: ./frontend/node_modules/.bin/tauri build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: modmaster-windows
+          path: src-tauri/target/release/bundle/
