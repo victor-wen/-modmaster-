@@ -1,0 +1,17 @@
+[package]
+name = "host-computer"
+version = "0.1.0"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+hc-core = { path = "../crates/hc-core" }
+hc-runtime = { path = "../crates/hc-runtime" }
+hc-ipc = { path = "../crates/hc-ipc" }
+hc-storage = { path = "../crates/hc-storage" }
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+log = "0.4"

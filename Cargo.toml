@@ -7,3 +7,4 @@ members = [
     "crates/hc-runtime",
     "crates/hc-ipc",
 ]
+exclude = ["src-tauri"]
